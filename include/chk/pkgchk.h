@@ -2,7 +2,14 @@
 #define PKGCHK_H
 
 #include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#define MAX_IDENT_LEN 1024
+#define MAX_FILENAME_LEN 255
+#define MAX_HASH_LEN 64
 
 /**
  * Query object, allows you to assign
@@ -16,8 +23,23 @@ struct bpkg_query {
 	size_t len;
 };
 
-//TODO: Provide a definition
-struct bpkg_obj;
+// Structure to represent a chunk within the package
+typedef struct chunk_obj {
+    char hash[MAX_HASH_LEN];
+    uint32_t offset;
+    uint32_t size;
+} Chunk;
+
+// Structure to represent the package object
+typedef struct bpkg_obj {
+    char ident[MAX_IDENT_LEN + 1];
+    char filename[MAX_FILENAME_LEN + 1];
+    uint32_t size;
+    uint32_t nhashes;
+    char **hashes;
+    uint32_t nchunks;
+    Chunk *chunks;
+} BpkgObj;
 
 
 /**
