@@ -5,12 +5,11 @@ INCLUDE=-Iinclude
 
 .PHONY: clean
 
-# Required for Part 1 - Make sure it outputs a .o file
-# to either objs/ or ./
-# In your directory
+pkgmain: src/pkgmain.c src/chk/pkgchk.c src/tree/merkletree.c src/crypt/sha256.c
+	$(CC) $^ $(INCLUDE) $(CFLAGS) $(LDFLAGS) -o $@
+
 pkgchk.o: src/chk/pkgchk.c
 	$(CC) -c $^ $(INCLUDE) $(CFLAGS) $(LDFLAGS)
-
 
 pkgchecker: src/pkgmain.c src/chk/pkgchk.c
 	$(CC) $^ $(INCLUDE) $(CFLAGS) $(LDFLAGS) -o $@

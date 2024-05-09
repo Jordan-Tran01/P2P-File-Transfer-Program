@@ -2,6 +2,7 @@
 #define MERKLE_TREE_H
 
 #include <stddef.h>
+#include<chk/pkgchk.h>
 
 #define SHA256_HEXLEN (64)
 
@@ -20,5 +21,8 @@ struct merkle_tree {
     struct merkle_tree_node* root;
     size_t n_nodes;
 };
+
+struct merkle_tree_node* build_merkle_tree(struct chunk_obj* chunks, int start, int end);
+void free_merkle_tree(struct merkle_tree_node* node);
 
 #endif

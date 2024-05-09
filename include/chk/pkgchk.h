@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include<stdbool.h>
 
 #define MAX_IDENT_LEN 1024
 #define MAX_FILENAME_LEN 255
@@ -21,7 +22,10 @@
 struct bpkg_query {
 	char** hashes;
 	size_t len;
+    size_t capacity;
 };
+
+struct merkle_tree_node;
 
 // Structure to represent a chunk within the package
 typedef struct chunk_obj {
@@ -39,8 +43,17 @@ typedef struct bpkg_obj {
     char **hashes;
     uint32_t nchunks;
     Chunk *chunks;
+    struct merkle_tree_node* merkle_root;
 } BpkgObj;
 
+bool is_chunk_complete(struct merkle_tree_node* node, struct bpkg_query complete_qry);
+void ensure_capacity_and_add_hash(struct bpkg_query* qry, char* hash);
+void merge_if_complete(struct bpkg_query* dest, struct bpkg_query* src, struct bpkg_query* complete_chunks);
+void free_query(struct bpkg_query* qry);
+bool is_chunk_complete_by_hash(const char* hash, struct bpkg_query* complete_chunks);
+bool all_hashes_complete(struct bpkg_query* qry, struct bpkg_query* complete_chunks);
+
+void merge_queries(struct bpkg_query* dest, struct bpkg_query* src);
 
 /**
  * Loads the package for when a value path is given

@@ -1,2 +1,8 @@
 .DS_Store
 src/.DS_Store
+pkgchk
+pkgmain
+.vscode
+src/chk/pkgchk.o
+sha256
+local_test
