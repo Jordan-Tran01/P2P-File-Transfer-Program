@@ -16,7 +16,7 @@ pkgchecker: src/pkgmain.c src/chk/pkgchk.c
 
 # Required for Part 2 - Make sure it outputs `btide` file
 # in your directory ./
-btide: src/btide.c
+btide: src/btide.c src/config.c src/peer.c src/package.c src/chk/pkgchk.c src/tree/merkletree.c src/crypt/sha256.c
 	$(CC) $^ $(INCLUDE) $(CFLAGS) $(LDFLAGS) -o $@
 
 # Alter your build for p1 tests to build unit-tests for your

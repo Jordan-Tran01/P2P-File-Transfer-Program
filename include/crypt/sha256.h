@@ -31,7 +31,7 @@ void sha256_finalize(struct sha256_compute_data* data,
 void sha256_output_hex(struct sha256_compute_data* data, 
 		char hexbuf[SHA256_CHUNK_SZ]);
 
-void compute_hash(const char *concat_string, char *output);
+void compute_hash(void *concat_string, char *output);
 
 
 #endif

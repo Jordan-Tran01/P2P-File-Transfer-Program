@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 #define SHA256K 64
-#define SHA256_BFLEN (1024)
+#define SHA256_BFLEN 4096
 #define CHUNK_SIZE (4096)
 #define rotate_r(val, bits) (val >> bits | val << (32 - bits))
 
@@ -237,7 +237,7 @@ void hex_to_bin(const char* hex_string, uint8_t* bin_data) {
     }
 }
 
-void compute_hash(const char *concat_string, char *output) {
+void compute_hash(void *concat_string, char *output) {
 	struct sha256_compute_data data;
 	sha256_compute_data_init(&data);
 	sha256_update(&data, concat_string, strlen(concat_string));
@@ -248,61 +248,3 @@ void compute_hash(const char *concat_string, char *output) {
 
 	sha256_output_hex(&data, output);
 }
-
-// int main(int argc, char** argv) {
-//     if (argc != 2) {
-//         printf("Usage: %s <filename>\n", argv[0]);
-//         return 1;
-//     }
-
-//     FILE* file = fopen(argv[1], "rb");
-//     if (!file) {
-//         perror("Unable to open file");
-//         return 1;
-//     }
-
-//     // Determine file size
-//     fseek(file, 0, SEEK_END);
-//     long fileSize = ftell(file);
-//     fseek(file, 0, SEEK_SET);
-
-//     // Calculate chunk size
-//     long chunkSize = 1048576 / TOTAL_CHUNKS;
-//     if (fileSize % TOTAL_CHUNKS != 0) {
-//         fclose(file);
-//         return 1;
-//     }
-
-//     uint8_t* buffer = malloc(chunkSize);
-//     if (!buffer) {
-//         perror("Failed to allocate memory for buffer");
-//         fclose(file);
-//         return 1;
-//     }
-
-//     struct sha256_compute_data cdata;
-//     uint8_t hash[SHA256_DIGEST_LENGTH];
-//     char hexHash[2 * SHA256_DIGEST_LENGTH + 1];  // Buffer for the hex output
-
-//     for (int i = 0; i < TOTAL_CHUNKS; i++) {
-//         if (fread(buffer, 1, chunkSize, file) != chunkSize) {
-//             perror("Failed to read full chunk");
-//             free(buffer);
-//             fclose(file);
-//             return 1;
-//         }
-
-//         // Initialize and compute hash for the chunk
-//         sha256_compute_data_init(&cdata);
-//         sha256_update(&cdata, buffer, chunkSize);
-//         sha256_finalize(&cdata, hash);
-//         sha256_output_hex(&cdata, hexHash);
-
-//         // Output the hash in hexadecimal format
-//         printf("Chunk %d Hash: %s\n", i + 1, hexHash);
-//     }
-
-//     free(buffer);
-//     fclose(file);
-//     return 0;
-// }

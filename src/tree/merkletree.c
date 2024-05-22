@@ -53,6 +53,19 @@ struct merkle_tree_node* build_merkle_tree(struct chunk_obj* chunks, int start, 
     return parent_node;
 }
 
+
+int find_hash(struct merkle_tree_node* node, const char* hash) {
+    if (node == NULL) {
+        return 0;
+    }
+
+    if (strcmp(node->computed_hash, hash) == 0) {
+        return 1; 
+    }
+
+    return find_hash(node->left, hash) || find_hash(node->right, hash);
+}
+
 void free_merkle_tree(struct merkle_tree_node* node) {
     if (node == NULL) {
         return;

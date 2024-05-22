@@ -31,11 +31,14 @@ struct bpkg_obj* bpkg_load(const char* path) {
     }
 
     // Initialize obj fields
-    memset(obj->ident, 0, sizeof(obj->ident)); // Ensure proper null termination
-    memset(obj->filename, 0, sizeof(obj->filename)); // Ensure proper null termination
+    memset(obj->ident, 0, sizeof(obj->ident));
+    memset(obj->filename, 0, sizeof(obj->filename));
     obj->size = 0;
     obj->nhashes = 0;
     obj->nchunks = 0;
+    obj->hashes = NULL;
+    obj->chunks = NULL;
+    obj->merkle_root = NULL;
 
     char line[1030];
     while (fgets(line, sizeof(line), bpkg_file)) {
@@ -129,6 +132,50 @@ struct bpkg_obj* bpkg_load(const char* path) {
     }
 
     fclose(bpkg_file);
+
+    if (!obj->size) {
+        fprintf(stderr, "Missing file size\n");
+        bpkg_obj_destroy(obj);
+        return NULL;
+    } else if (!obj->nchunks) {
+        fprintf(stderr, "Missing nchunks\n");
+        free(obj->hashes);
+        free(obj->chunks);
+        free(obj);
+        return NULL;
+    } else if (!obj->nhashes) {
+        fprintf(stderr, "Missing nhashes\n");
+        free(obj->chunks);
+        for (int i = 0; i < obj->nhashes; i++) {
+            free(obj->hashes[i]);
+        }
+        free(obj->hashes);
+        free(obj);
+        return NULL;
+    }
+    
+
+    if (obj->nchunks && !(obj->nchunks & (obj->nchunks - 1)) == false) {
+        fprintf(stderr, "Invalid nchunks\n");
+        free(obj->chunks);
+        for (int i = 0; i < obj->nhashes; i++) {
+            free(obj->hashes[i]);
+        }
+        free(obj->hashes);
+        free(obj);
+        return NULL;
+    }
+
+    if (obj->nhashes != obj->nchunks - 1) {
+        fprintf(stderr, "Invalid nhashes\n");
+        free(obj->chunks);
+        for (int i = 0; i < obj->nhashes; i++) {
+            free(obj->hashes[i]);
+        }
+        free(obj->hashes);
+        free(obj);
+        return NULL;
+    }
 
     return obj;
 }
@@ -377,7 +424,67 @@ struct bpkg_query bpkg_get_completed_chunks(struct bpkg_obj* obj) {
     struct bpkg_query qry = {0};
     FILE* file = fopen(obj->filename, "rb");
     if (!file) {
-        printf("%s\n", obj->filename);
+        perror("Unable to open file");
+        return qry;
+    }
+
+    long chunkSize = obj->size / obj->nchunks;
+    uint8_t* buffer = malloc(chunkSize);
+    if (!buffer) {
+        perror("Failed to allocate memory for buffer");
+        fclose(file);
+        return qry;
+    }
+
+    struct sha256_compute_data cdata;
+    uint8_t hash[SHA256_DIGEST_LENGTH];
+    char hexHash[MAX_HASH_LEN + 1] = {0}; 
+
+    qry.hashes = malloc(obj->nchunks * sizeof(char*));
+    if (qry.hashes == NULL) {
+        perror("Memory allocation failed for qry.hashes");
+        free(buffer);
+        fclose(file);
+        return qry;
+    }
+
+    qry.len = 0;
+
+    for (int i = 0; i < obj->nchunks; i++) {
+        if (fread(buffer, 1, chunkSize, file) != chunkSize) {
+            perror("Failed to read full chunk");
+            continue;
+        }
+
+        sha256_compute_data_init(&cdata);
+        sha256_update(&cdata, buffer, chunkSize);
+        sha256_finalize(&cdata, hash);
+        sha256_output_hex(&cdata, hexHash);
+
+        if (strcmp(hexHash, obj->chunks[i].hash) == 0) {
+            qry.hashes[qry.len] = strdup(hexHash);
+            qry.len++;
+        }
+    }
+
+    free(buffer);
+    fclose(file);
+
+    // Resize array of hashes to match the number of matches found
+    if (qry.len > 0) {
+        qry.hashes = realloc(qry.hashes, qry.len * sizeof(char*));
+    } else {
+        free(qry.hashes);
+        qry.hashes = NULL;
+    }
+
+    return qry;
+}
+
+struct bpkg_query compare_files(struct bpkg_obj* obj, const char* filepath) {
+    struct bpkg_query qry = {0};
+    FILE* file = fopen(filepath, "rb");
+    if (!file) {
         perror("Unable to open file");
         return qry;
     }

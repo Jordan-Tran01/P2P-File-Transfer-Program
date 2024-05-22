@@ -52,6 +52,7 @@ void merge_if_complete(struct bpkg_query* dest, struct bpkg_query* src, struct b
 void free_query(struct bpkg_query* qry);
 bool is_chunk_complete_by_hash(const char* hash, struct bpkg_query* complete_chunks);
 bool all_hashes_complete(struct bpkg_query* qry, struct bpkg_query* complete_chunks);
+struct bpkg_query compare_files(struct bpkg_obj* obj, const char* filepath);
 
 void merge_queries(struct bpkg_query* dest, struct bpkg_query* src);
 

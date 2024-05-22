@@ -24,5 +24,6 @@ struct merkle_tree {
 
 struct merkle_tree_node* build_merkle_tree(struct chunk_obj* chunks, int start, int end);
 void free_merkle_tree(struct merkle_tree_node* node);
+int find_hash(struct merkle_tree_node* node, const char* hash);
 
 #endif

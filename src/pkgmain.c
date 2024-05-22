@@ -59,12 +59,12 @@ int main(int argc, char** argv) {
 	if(arg_select(argc, argv, &argselect, hash)) {
 		struct bpkg_query qry = { 0 };
 		struct bpkg_obj* obj = bpkg_load(argv[1]);
-    	struct merkle_tree_node* root = build_merkle_tree(obj->chunks, 0, obj->nchunks - 1);
-		obj->merkle_root = root;
-		if(!obj) {
-			puts("Unable to load pkg and tree");
+		if (!obj) {
 			exit(1);
 		}
+
+    	struct merkle_tree_node* root = build_merkle_tree(obj->chunks, 0, obj->nchunks - 1);
+		obj->merkle_root = root;
 
 		if(argselect == 1) {
 			qry = bpkg_get_all_hashes(obj);
